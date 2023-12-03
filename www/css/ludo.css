@@ -1,0 +1,11 @@
+#ludo_table td{width: 3.5em; height: 3.5em; border: 1px solid black;text-align: center;}
+#ludo_table {border-collapse: collapse;}
+td.Y_square {background-color: rgb(240, 240, 175);}
+td.R_square {background-color: rgb(235, 158, 158);}
+td.B_square {background-color: rgb(108, 108, 241);}
+td.G_square {background-color: rgb(145, 244, 145);}
+td.empty_square {background-color: black !important;}
+img.piece1x {width: 2.3em; height: 3em;}
+img.piece2x {width: 1.6em; height: 2em;}
+img.piece3x {width: 1em; height: 1.5em;}
+img.piece4x {width: 0.8em; height: 1.5em;}
