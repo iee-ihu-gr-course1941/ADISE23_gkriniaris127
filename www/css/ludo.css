@@ -1,9 +1,11 @@
-#ludo_table td{width: 3.5em; height: 3.5em; border: 1px solid black;text-align: center;}
+#ludo_title {width: 51.2em; height: 5em; background-color: #293040; border: 2px solid white;}
+#title_image {width: 15em; height: 4em;}
+#ludo_table td{width: 3.4em; height: 3.4em; border: 1px solid black;text-align: center;}
 #ludo_table {border-collapse: collapse;}
-td.Y_square {background-color: rgb(240, 240, 175);}
-td.R_square {background-color: rgb(235, 158, 158);}
-td.B_square {background-color: rgb(108, 108, 241);}
-td.G_square {background-color: rgb(145, 244, 145);}
+td.Y_square {background-color: rgb(241, 241, 202);}
+td.R_square {background-color: rgb(232, 192, 192);}
+td.B_square {background-color: rgb(158, 158, 242);}
+td.G_square {background-color: rgb(178, 245, 178);}
 td.empty_square {background-color: black !important;}
 img.piece1x {width: 2.3em; height: 3em;}
 img.piece2x {width: 1.6em; height: 2em;}

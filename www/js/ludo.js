@@ -36,10 +36,7 @@ function fill_board_by_data(data){
         var o = data[i];
         var id = '#square_'+ o.x + '_' + o.y;
         var im = '';
-        var im1 = '';
-        var im2 = '';
-        var im3 = '';
-        if(o.piece_num!=null && o.piece_color!=null){
+        if(o.piece_num!=null){
             switch(o.piece_color){
                 case 'Y':
                     im = '<img class="piece1x" src="images/yellow.png">';
@@ -55,17 +52,11 @@ function fill_board_by_data(data){
                     break;
                 case 'G': 
                     im = '<img class="piece1x" src="images/green.png">';
-                    im1 = '<img class="piece4x" src="images/red.png">';
-                    im2 = '<img class="piece4x" src="images/blue.png">';
-                    im3 = '<img class="piece4x" src="images/blue.png">';
-                    console.log("gre");
                     break;
                 default: '';
                 break;
             }
         }
-        var images = im1 + im + im2 + im3;
-        //$(id).html('<div class="image-container">' + images + '</div>'); // Place images inside a container
         $(id).addClass(o.b_color + '_square').html(im);
         cells[id] = true;
     }
