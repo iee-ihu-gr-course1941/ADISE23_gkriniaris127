@@ -16,11 +16,43 @@
     <div id="ludo_title">
         <img src="images/LOGO.png" alt="logo" id="title_image">
     </div>
-    
-    <div id="ludo_board">
-
+    <div id="container" style="width: 80em;">
+        <div id="ludo_board" style="float: left;"></div>
+        <div id="game_modes" style="float: right;">
+            <div id="selectors">
+                <label id="label1" for="username">Type username:</label>
+                <input id="username">
+                <p>Select color:</p>
+                <div id="colour-selection">
+                    <input type="radio" id="color-R" name="colour" value="R">
+                    <label for="color-R" style="color: red;">Red</label><br>
+                
+                    <input type="radio" id="color-B" name="colour" value="B">
+                    <label for="color-B" style="color: blue;">Blue</label><br>
+                
+                </div>
+                <div id="login-div" style="border-top: 2em solid white">
+                    <button onclick="login_to_game()" id="ludo_login" class="btn btn-primary">Submit</button><br>
+                </div>
+                
+            </div>
+            <div id="game_info" style="height: 8em; width: 25em;"></div>
+            <!-- <div id="ludo_reset">
+                <button id="start_button" onclick="start()" class="btn btn-primary">START</button><br>
+            </div> -->
+            <div id="dice" style="border: 1em;">
+                <button onclick="rollDice()">Roll Dice</button>
+                <p id="result"></p>
+                <div id="move_div">
+                    Ποιό πιόνι θές να μετακινηθεί; <input id="the_move"> <button id="do_move" class="btn btn-primary"> Go </button>
+                </div>
+            </div>
+            
+        </div>
+        
     </div>
-    <button id="ludo_reset" class="btn btn-primary">START</button><br>
+    
+    
     
 </body>
 </html>
