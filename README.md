@@ -75,6 +75,7 @@ _Φοιτητής: it175127_
 
 > Μετά την καταχώρηση στοιχείων παικτών
 
-![image](https://github.com/iee-ihu-gr-course1941/ADISE23_gkriniaris127/assets/77936947/fd131148-6d07-4246-9590-57ed0c84e015)
+![image](https://github.com/iee-ihu-gr-course1941/ADISE23_gkriniaris127/assets/77936947/929144bc-4098-42a3-a836-2b5fb7d02767)
+
 
 
