@@ -11,3 +11,6 @@ img.piece1x {width: 2.3em; height: 3em;}
 img.piece2x {width: 1.6em; height: 2em;}
 img.piece3x {width: 1em; height: 1.5em;}
 img.piece4x {width: 0.8em; height: 1.5em;}
+.selected {
+    border: 2px solid rgb(243, 41, 219); /* Change border or any style to represent selection */
+}

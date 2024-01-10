@@ -52,7 +52,7 @@ function update_game_status() {
 
     // Determine new status and turn
     $new_status = null;
-    $new_turn ='';
+    $new_turn = null;
 
     switch ($active_players) {
         case 0:
@@ -63,7 +63,7 @@ function update_game_status() {
             break;
         case 2:
             $new_status = 'started';
-            if ($status['p_turn'] == null) {
+            if ($new_turn == null) {
                 $new_turn = 'R';
             }
             break;

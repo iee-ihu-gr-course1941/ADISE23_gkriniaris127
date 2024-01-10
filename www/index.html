@@ -10,7 +10,7 @@
     <link href="bootstrap/css/bootstrap.min.css" rel="stylesheet">
     <link href="css/ludo.css" rel="stylesheet">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="js\ludo.js"></script>
+    <script src="js\ludo.js" type="module"></script>
 </head>
 <body>
     <div id="ludo_title">
@@ -32,7 +32,7 @@
                 
                 </div>
                 <div id="login-div" style="border-top: 2em solid white">
-                    <button onclick="login_to_game()" id="ludo_login" class="btn btn-primary">Submit</button><br>
+                    <button id="ludo_login" class="btn btn-primary">Submit</button><br>
                 </div>
                 
             </div>
@@ -41,10 +41,26 @@
                 <button id="start_button" onclick="start()" class="btn btn-primary">START</button><br>
             </div> -->
             <div id="dice" style="border: 1em;">
-                <button onclick="rollDice()">Roll Dice</button>
+                <button id="rollDice">Roll Dice</button>
                 <p id="result"></p>
+                <div id="Notmove_div">
+                    Δεν έφερες 6, παίζει ο επόμενος; 
+                </div>
                 <div id="move_div">
-                    Ποιό πιόνι θές να μετακινηθεί; <input id="the_move"> <button id="do_move" class="btn btn-primary"> Go </button>
+                    Εφερες 6, ξανα ρίξε το ζαρι να μετακινηθεις. 
+                </div>
+                <div id="move_div2">
+                    Ποιό πιόνι θές να μετακινηθεί; 
+                </div>
+                <div id="yesno">
+                    <p>Θέλεις να βγάλεις νέο πιόνι?
+                    </p>
+                    <input type="radio" id="yes" name="yesno" value="yes" class="yesno-option">
+                    <label for="yes">Yes</label><br>
+                
+                    <input type="radio" id="no" name="yesno" value="no" class="yesno-option">
+                    <label for="no">No</label><br>
+                
                 </div>
             </div>
             

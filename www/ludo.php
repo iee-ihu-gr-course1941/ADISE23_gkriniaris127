@@ -4,6 +4,7 @@ require_once "../lib/dbconnection.php";
 require_once "../lib/board.php";
 require_once "../lib/game.php";
 require_once "../lib/users.php";
+// require_once "../lib/websocket_server.php";
 
 //show_board();
 
@@ -20,8 +21,8 @@ switch ($r=array_shift($request)) {
             case 'FSSDF': exit;
             case null: handle_board($method);
                 break;
-            case 'piece': handle_piece($method, $request[0],$request[1],$input);
-                break;
+            // case 'piece': handle_piece($method, $request[0],$request[1],$input);
+            //     break;
             //case 'player': handle_player($method, $request[0],$input);
                 //break;
             default: header("HTTP/1.1 404 Not Found");
@@ -36,59 +37,272 @@ switch ($r=array_shift($request)) {
         break; 
     case 'players': handle_player($method, $request,$input);
         break;
-    case 'dice': handle_dice($method, $request,$input) ;
-        break;     
+    case 'dice': 
+        //$c=array_shift($request);
+        //if($c==null){
+            handle_dice($method, $request);
+        //}
+        //handle_dice($method, $request) ;
+        break;
+    case 'move': 
+        switch ($b=array_shift($request)) {
+            case 'first': move_first($method , $request);
+            break;
+            case '1': 
+            case '2':
+            case '3':
+            case '4': move_more($method, $request, $b);
+            break;
+        }
+        
+        break;
+    case 'turn': change_turn($method, $request);
+        break;
     default:
     header("HTTP/1.1 404 Not Found");
     exit;
 
 }
 
-function handle_dice($method, $request,$input) {
+
+function change_turn($method, $p){
+    $nextTurn=null;
+    if($method=="POST"){
+        switch ($b=array_shift($p)) {
+            case 'R': $nextTurn='B';
+            break;
+            case 'B' : $nextTurn='R';
+        }
+    }
+
+    global $mysqli;
+    $updateSql1 = "UPDATE game_status SET p_turn = '$nextTurn'";
+    $updateResult = $mysqli->query($updateSql1);
+
+}
+
+function move_piece($method, $p){
+    if($method=="POST"){
+        switch ($b=array_shift($p)) {
+            case '1': 
+        }
+    }
+}
+
+// function handle_pieces($method, $request){
+//     if($method== "GET"){
+//         global $mysqli;
+//         $sql ="select players.player_no as no, players.piece_colour as color from players join game_status on players.piece_colour = game_status.p_turn where players.piece_colour = game_status.p_turn";
+//         $result = $mysqli->query($sql);
+//         $piece= '';
+//         $color ='';
+//         while($row = $result->fetch_assoc()) {
+//             $piece= $row["no"];
+//             $color = $row["color"];
+//         }
+//     }
+// }
+
+function handle_dice($method, $request) {
+    global $mysqli;
+    $sql ="select players.player_no as no, players.piece_colour as color from players join game_status on players.piece_colour = game_status.p_turn where players.piece_colour = game_status.p_turn";
+    $result = $mysqli->query($sql);
+    $piece= '';
+    $color ='';
+    while($row = $result->fetch_assoc()) {
+        $piece= $row["no"];
+        $color = $row["color"];
+    }
+
+    $combinedData1 = array(
+        'color' => $color,
+        'piece_no' => $piece
+    );
+    
     if($method== "POST"){
         global $mysqli;
-        $sql = 'SELECT p_turn FROM game_status';
+        $sql = 'SELECT game_status.p_turn as p_turn, players.token as token FROM game_status join players on game_status.p_turn = players.piece_colour';
         $result = $mysqli->query($sql);
+        
 
         if ($result) {
             $row = $result->fetch_assoc();
             $currentPlayer = $row['p_turn'];
-            if ($currentPlayer === $playerToken) { // Προσαρμόστε τη μεταβλητή που περιέχει το token του παίκτη
-                // Ο παίκτης έχει τη σειρά του να ρίξει το ζάρι
-                $diceResult = mt_rand(1, 6); // Ρίξτε το ζάρι
-        
-                // Ανανεώστε τον πίνακα game_status με τη σειρά του επόμενου παίκτη
-                // Π.χ., αλλάξτε την τιμή της στήλης p_turn στον επόμενο παίκτη
-                $nextPlayer = ($currentPlayer === 'player1') ? 'player2' : 'player1';
-                $updateSql = "UPDATE game_status SET p_turn = '$nextPlayer'";
-                $updateResult = $mysqli->query($updateSql);
-        
-                if ($updateResult) {
-                    // Επιτυχής ενημέρωση του game_status
-                    // Επιστρέψτε το αποτέλεσμα του ζαριού στον παίκτη με JSON
-                    echo json_encode(['diceResult' => $diceResult]);
-                } else {
-                    // Σφάλμα κατά την ενημέρωση του game_status
-                    http_response_code(500);
-                    echo json_encode(['error' => 'Failed to update game status']);
-                }
-            } else {
-                // Ο παίκτης δεν έχει σειρά, οπότε δεν μπορεί να ρίξει το ζάρι
-                http_response_code(403); // Κωδικός απαγόρευσης πρόσβασης
-                echo json_encode(['error' => 'Not your turn to roll the dice']);
+            $playerToken = $row['token'];
+            $diceResult=array_shift($request);
+            
+            if($row['p_turn'] == 'R'){
+                $nextPlayer = 'B';
+            }else if ($row['p_turn'] == 'B') {
+                $nextPlayer = 'R';
             }
+            
+            $updateSql1 = "UPDATE game_status SET dice_num = '$diceResult'";
+            $updateResult = $mysqli->query($updateSql1);
+
+            
+            
+            header('Content-type: application/json');
+            print json_encode($combinedData1, JSON_PRETTY_PRINT);
+           
+            
         } else {
             // Σφάλμα κατά την ανάκτηση του game_status
             http_response_code(500);
             echo json_encode(['error' => 'Failed to retrieve game status']);
         }
+    
     }
     
 }
 
+function move_first($method , $request){
+    $pieceno=array_shift($request);
+    
+    if($method=="PUT"){
+        global $mysqli;
+        $sql ="select p_turn as color from game_status";
+        $result = $mysqli->query($sql);
+        $piece= '';
+        $color ='';
+        while($row = $result->fetch_assoc()) {
+            $color = $row["color"];
+        }
+        $colorx='';
+        $colory='';
+        if($color=='R'){
+            $colorx='redX';
+            $colory='redY';
+        }else if($color=='B'){
+            $colorx='blueX';
+            $colory='blueY';
+        }
+
+        
+        if($pieceno == 1){
+            $position=61;
+        } else if ($pieceno == 2){
+            $position=60;
+        } else if ($pieceno == 3){
+            $position=59;
+        } else if ($pieceno == 4){
+            $position=58;
+        }
+
+        $sql3 = "SELECT ".$colorx." as x, ".$colory." as y from positions WHERE position=".$position."";
+        $st1 = $mysqli -> query($sql3);
+        $data1 = $st1->fetch_all(MYSQLI_ASSOC);
+
+        $sql4 ="SELECT ".$colorx." as x, ".$colory." as y from positions WHERE position=1";
+        $st2 = $mysqli -> query($sql4);
+        $data2 = $st2->fetch_all(MYSQLI_ASSOC);
+
+        
+        $combinedData = array(
+            'current' => $data1,
+            'next' => $data2,
+            'color' => $color,
+            'piece_no' => $pieceno
+        );
+
+        $cx = $data1[0]['x']; // Accessing the 'x' value from the first row in $data2
+        $cy = $data1[0]['y'];
+
+        $nx = $data2[0]['x']; // Accessing the 'x' value from the first row in $data2
+        $ny = $data2[0]['y'];
+        
+        header('Content-type: application/json');
+        print json_encode($combinedData, JSON_PRETTY_PRINT);
+
+        $updateSql = "UPDATE board SET position = 1, piece_num=$pieceno, piece_colour='$color' where x=$nx and y=$ny";
+        $updateResult = $mysqli->query($updateSql);
+
+        $updateSql1 = "UPDATE board SET position = null, piece_num=null, piece_colour=null where x=$cx and y=$cy";
+        $updateResult = $mysqli->query($updateSql1);
+
+        //show_board();
+
+        $updateSql2 = "UPDATE players SET player_no = '$pieceno' where piece_colour='$color'";
+        $updateResult = $mysqli->query($updateSql2);
+    }
+}
+
+function move_more($method , $request, $b){
+    
+
+    global $mysqli;
+    $sql ="select players.player_no as no, players.piece_colour as color from players join game_status on players.piece_colour = game_status.p_turn where players.piece_colour = game_status.p_turn";
+    $result = $mysqli->query($sql);
+    $piece= '';
+    $color ='';
+    while($row = $result->fetch_assoc()) {
+        $piece= $row["no"];
+        $color = $row["color"];
+    }
+    $colorx='';
+    $colory='';
+    if($color=='R'){
+        $colorx='redX';
+        $colory='redY';
+    }else if($color=='B'){
+        $colorx='blueX';
+        $colory='blueY';
+    }
+
+    if($method=="PUT"){
+        if ($b == 1){
+            $sql3 = "SELECT dice_num as dice from game_status";
+            $st1 = $mysqli -> query($sql3);
+            $data1 = $st1->fetch_all(MYSQLI_ASSOC);
+
+            $dice = $data1[0]['dice'];
+            $movement= $dice + 1;
+
+            $sql3 = "SELECT x, y from board WHERE piece_colour = '".$color."' and piece_num = 1 ";
+            $st1 = $mysqli -> query($sql3);
+            $data1 = $st1->fetch_all(MYSQLI_ASSOC);
+
+
+            $sql4 ="SELECT ".$colorx." as x, ".$colory." as y from positions WHERE position= ".$movement."";
+            $st2 = $mysqli -> query($sql4);
+            $data2 = $st2->fetch_all(MYSQLI_ASSOC);
+
+            $cx = $data1[0]['x']; // Accessing the 'x' value from the first row in $data2
+            $cy = $data1[0]['y'];
+
+            $nx = $data2[0]['x']; // Accessing the 'x' value from the first row in $data2
+            $ny = $data2[0]['y'];
+            
+
+            $piece = 1;
+            $updateSql = "UPDATE board SET position = 1, piece_num=$piece, piece_colour='$color' where x=$nx and y=$ny";
+            $updateResult = $mysqli->query($updateSql);
+
+            $updateSql1 = "UPDATE board SET position = null, piece_num=null, piece_colour=null where x=$cx and y=$cy";
+            $updateResult = $mysqli->query($updateSql1);
+        }
+    }
+}
+
+function play_the_dice($player, $dice) {
+    global $mysqli;
+
+    $sql = "SELECT board.x, board.y, board.piece_colour, game_status.dice_num from board join game_status on board.piece_colour = game_status.p_turn where board.piece_colour='$player'";
+    $st = $mysqli -> prepare($sql);
+
+    $st -> execute();
+    $res = $st -> get_result();
+
+    $data = $res->fetch_all(MYSQLI_ASSOC);
+    header('Content-type: application/json');
+    print json_encode($data, JSON_PRETTY_PRINT);
+}
+
 function handle_board($method) {
     if ($method == 'GET') {
+        
         show_board();
+        
     } else if ($method == 'POST') {
         reset_board();
     } else {
@@ -110,11 +324,11 @@ function handle_welcome($method) {
 }
 
 
-function handle_piece($method, $x, $y, $input) {
-    if ($method == 'GET') {
-        show_piece($x, $y);
-    }
-}
+// function handle_piece($method, $x, $y, $input) {
+//     if ($method == 'GET') {
+//         show_piece($x, $y);
+//     }
+// }
 
 
 function handle_player($method, $p, $input) {
