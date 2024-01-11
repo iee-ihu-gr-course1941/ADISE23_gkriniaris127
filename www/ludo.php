@@ -105,18 +105,31 @@ function move_piece($method, $p){
 
 function handle_dice($method, $request) {
     global $mysqli;
-    $sql ="select players.player_no as no, players.piece_colour as color from players join game_status on players.piece_colour = game_status.p_turn where players.piece_colour = game_status.p_turn";
+    $sql ="select players.player_no as no, players.piece_colour as color from players join game_status on 
+    players.piece_colour = game_status.p_turn where players.piece_colour = game_status.p_turn";   
     $result = $mysqli->query($sql);
+
     $piece= '';
     $color ='';
+    $position = '';
+
     while($row = $result->fetch_assoc()) {
         $piece= $row["no"];
         $color = $row["color"];
     }
 
+    if ($piece != null){
+        $sql3 = "SELECT position from board where piece_colour = '$color' and piece_num = $piece - 1";
+        $st1 = $mysqli -> query($sql3);
+        $data1 = $st1->fetch_assoc();
+
+        $position = $data1["position"];
+    }
+    
     $combinedData1 = array(
         'color' => $color,
-        'piece_no' => $piece
+        'piece_no' => $piece,
+        'position' => $position
     );
     
     if($method== "POST"){
@@ -189,11 +202,11 @@ function move_first($method , $request){
             $position=58;
         }
 
-        $sql3 = "SELECT ".$colorx." as x, ".$colory." as y from positions WHERE position=".$position."";
+        $sql3 = "SELECT $colorx as x, $colory as y from positions WHERE position=$position";
         $st1 = $mysqli -> query($sql3);
         $data1 = $st1->fetch_all(MYSQLI_ASSOC);
 
-        $sql4 ="SELECT ".$colorx." as x, ".$colory." as y from positions WHERE position=1";
+        $sql4 ="SELECT $colorx as x, $colory as y from positions WHERE position=1";
         $st2 = $mysqli -> query($sql4);
         $data2 = $st2->fetch_all(MYSQLI_ASSOC);
 
@@ -220,10 +233,10 @@ function move_first($method , $request){
         $updateSql1 = "UPDATE board SET position = null, piece_num=null, piece_colour=null where x=$cx and y=$cy";
         $updateResult = $mysqli->query($updateSql1);
 
-        //show_board();
+        $updateSql1 = "UPDATE players SET player_no = $pieceno where piece_colour= '$color'";
+        $updateResult = $mysqli->query($updateSql1);
 
-        $updateSql2 = "UPDATE players SET player_no = '$pieceno' where piece_colour='$color'";
-        $updateResult = $mysqli->query($updateSql2);
+       
     }
 }
 
@@ -250,39 +263,62 @@ function move_more($method , $request, $b){
     }
 
     if($method=="PUT"){
-        if ($b == 1){
+        
             $sql3 = "SELECT dice_num as dice from game_status";
             $st1 = $mysqli -> query($sql3);
+            $data = $st1->fetch_all(MYSQLI_ASSOC);
+
+            $sql2 = "SELECT x, y, position from board where piece_colour= '".$color."' and piece_num = ".$b;
+            $st1 = $mysqli -> query($sql2);
             $data1 = $st1->fetch_all(MYSQLI_ASSOC);
 
-            $dice = $data1[0]['dice'];
-            $movement= $dice + 1;
+            $dice = $data[0]['dice'];
+            $posi = $data1[0]['position'];
+            $movement= $dice + $posi;
+            if ($movement <= 57) {
+                $sql4 ="SELECT ".$colorx." as x, ".$colory." as y from positions WHERE position= ".$movement."";
+                $st2 = $mysqli -> query($sql4);
+                $data2 = $st2->fetch_all(MYSQLI_ASSOC);
 
-            $sql3 = "SELECT x, y from board WHERE piece_colour = '".$color."' and piece_num = 1 ";
-            $st1 = $mysqli -> query($sql3);
-            $data1 = $st1->fetch_all(MYSQLI_ASSOC);
+                $cx = $data1[0]['x']; // Accessing the 'x' value from the first row in $data2
+                $cy = $data1[0]['y'];
+
+                $nx = $data2[0]['x']; // Accessing the 'x' value from the first row in $data2
+                $ny = $data2[0]['y'];
+                
+
+                $updateSql = "UPDATE board SET position = $movement, piece_num=$b, piece_colour='$color' where x=$nx and y=$ny";
+                $updateResult = $mysqli->query($updateSql);
+
+                $updateSql1 = "UPDATE board SET position = null, piece_num=null, piece_colour=null where x=$cx and y=$cy";
+                $updateResult = $mysqli->query($updateSql1);
+
+                if ($movement == 57){
+                    $b++;
+                    $updateSql2 = "UPDATE players SET player_no =$b  where piece_colour='$color'";
+                    $updateResult = $mysqli->query($updateSql2);
+                }
 
 
-            $sql4 ="SELECT ".$colorx." as x, ".$colory." as y from positions WHERE position= ".$movement."";
-            $st2 = $mysqli -> query($sql4);
-            $data2 = $st2->fetch_all(MYSQLI_ASSOC);
+                $sql ="SELECT count(position) FROM board WHERE piece_colour = '$color'";
+                $st2 = $mysqli -> query($sql);
+                $data = $st2->fetch_all(MYSQLI_ASSOC);
 
-            $cx = $data1[0]['x']; // Accessing the 'x' value from the first row in $data2
-            $cy = $data1[0]['y'];
+                $winner = 0;
+                if ($data[0] == 1) {
+                    $winner = 1;
+                    $updateSql2 = "UPDATE game_status SET result = '$color'";
+                    $updateResult = $mysqli->query($updateSql2);
+                }
 
-            $nx = $data2[0]['x']; // Accessing the 'x' value from the first row in $data2
-            $ny = $data2[0]['y'];
+                header('Content-type: application/json');
+                print json_encode($winner, JSON_PRETTY_PRINT);
             
-
-            $piece = 1;
-            $updateSql = "UPDATE board SET position = 1, piece_num=$piece, piece_colour='$color' where x=$nx and y=$ny";
-            $updateResult = $mysqli->query($updateSql);
-
-            $updateSql1 = "UPDATE board SET position = null, piece_num=null, piece_colour=null where x=$cx and y=$cy";
-            $updateResult = $mysqli->query($updateSql1);
         }
     }
 }
+
+
 
 function play_the_dice($player, $dice) {
     global $mysqli;

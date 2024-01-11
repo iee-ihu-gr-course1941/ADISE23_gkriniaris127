@@ -1,4 +1,5 @@
 $(function() {
+    $('#resul').hide();
     $('#ludo_reset').hide();
     $('#dice').hide();
     $('#Notmove_div').hide();
@@ -8,18 +9,18 @@ $(function() {
     setTimeout(function() {game_status_update();}, 15000);
     draw_empty_board();
     fill_board();
-    $('#ludo_reset').click(reset_board);
     $('#ludo_login').click(login_to_game);
     $('#do_move').click(do_move);
     $('#rollDice').click(rollDice);
     $('input[name="yesno"]').click(getYesNo)
+    $('#resetButton').click(reset);
 });
 
 let selectedValue = null;
 var countdice=0;
 let no_pieces = null;
 let turn = null;
-
+let diceResult;
 console.log("countdice " + countdice);
 
 function do_move(){
@@ -27,33 +28,26 @@ function do_move(){
     var re = $('#result').val();
 }
 
-
 function start(){
     $('#ludo_reset').hide();
 }
 
-let diceResult;
-
 function dice() {
-    // Generate a random number between 1 and 6 (for a standard six-sided die)
     diceResult = Math.floor(Math.random() * 6) + 1;
-    
+    document.getElementById("result").innerHTML = "Έφερες " + diceResult;
 }
 
 function rollDice() {
-
     dice();
-    console.log(diceResult);
     $.ajax({
         type: "POST",
-        url: "ludo.php/dice/" + diceResult, // Replace with your PHP API endpoint
-        data: { diceResult: diceResult }, // Pass the dice result as data
+        url: "ludo.php/dice/" + diceResult, 
+        data: { diceResult: diceResult }, 
         success: check_pieces,
         error: function(xhr, status, error) {
-            console.log("AJAX error:", error); // Log any AJAX errors
+            console.log("AJAX error:", error); 
         }
     });
-       
 }
 
 function check_pieces(data){
@@ -61,91 +55,114 @@ function check_pieces(data){
     countdice++;
     var piece = data.piece_no;
     var color = data.color;
-    console.log(piece);
+    var posi = data.position;
+    console.log("game_status.p_turn "+game_status.p_turn);
+    console.log("turn "+turn);
 
-    if (diceResult != 6 && piece == null && countdice == 1){
-        $('#Notmove_div').show(1000);
-        pturn(color);
-        
-        countdice=0;
-
-        //++++ change turn js
-    }else if (diceResult == 6 && piece == null && countdice == 1) {
-        console.log("countdice " + countdice);
-        $('#move_div').show();
-
-        $.ajax({
-            type: "PUT",
-            url: "ludo.php/move/first/1", // Replace with your PHP API endpoint
-            success: fill_board,
-            error: function(xhr, status, error) {
-                console.log("AJAX error:", error); // Log any AJAX errors
-            }
-        });
-    }else if (diceResult == 6 && piece == 1 && countdice == 1) {
-        console.log("countdice " + countdice);
-        $('#move_div').show();
-
-        $.ajax({
-            type: "PUT",
-            url: "ludo.php/move/first/2", // Replace with your PHP API endpoint
-            success: fill_board,
-            error: function(xhr, status, error) {
-                console.log("AJAX error:", error); // Log any AJAX errors
-            }
-        });
-    }else if (diceResult == 6 && piece == 2 && countdice == 1) {
-        console.log("countdice " + countdice);
-        $('#move_div').show();
-
-        $.ajax({
-            type: "PUT",
-            url: "ludo.php/move/first/3", // Replace with your PHP API endpoint
-            success: fill_board,
-            error: function(xhr, status, error) {
-                console.log("AJAX error:", error); // Log any AJAX errors
-            }
-        });
-    }else if (diceResult == 6 && piece == 3 && countdice == 1) {
-        console.log("countdice " + countdice);
-        $('#move_div').show();
-
-        $.ajax({
-            type: "PUT",
-            url: "ludo.php/move/first/4", // Replace with your PHP API endpoint
-            success: fill_board,
-            error: function(xhr, status, error) {
-                console.log("AJAX error:", error); // Log any AJAX errors
-            }
-        });
-    }else if (piece == 1 && countdice == 2) {
-        console.log("countdice " + countdice);
-        
+    if(game_status.p_turn == color){
+        if (diceResult != 6 && piece == null && countdice == 1){
+            $('#Notmove_div').show(500);
+            $('#Notmove_div').hide(3000);
+            
+            pturn(color);
+            
             countdice=0;
+        }else if (diceResult == 6 && countdice == 1 && posi == 57) {
+            piece++;
+            console.log("countdice ++++" + countdice);
+            console.log("tmp"+ piecetmp);
+            console.log("piece "+ piece);
+            $('#move_div').show();
+            $('#move_div').hide(3000);
             $.ajax({
                 type: "PUT",
-                url: "ludo.php/move/1", // Replace with your PHP API endpoint
+                url: "ludo.php/move/first/"+piece, 
                 success: fill_board,
                 error: function(xhr, status, error) {
-                    console.log("AJAX error:", error); // Log any AJAX errors
+                    console.log("AJAX error:", error); 
                 }
             });
-    
+        }else if (piece==null && diceResult == 6 && countdice == 1){
+            console.log("countdice " + countdice);
+            $('#move_div').show();
+            $('#move_div').hide(3000);
+            $.ajax({
+                type: "PUT",
+                url: "ludo.php/move/first/1", 
+                success: fill_board,
+                error: function(xhr, status, error) {
+                    console.log("AJAX error:", error); 
+                }
+            });
+        }
+        else if (countdice == 2) {
+            console.log("countdice " + countdice);
+            console.log("piece dice 2  " + piece);
+            $.ajax({
+                type: "PUT",
+                url: "ludo.php/move/"+piece, 
+                success:function(response) {
+                    var result = response.data;
+                    if (result == 1) {
+                        $('#resul').show(3000);
+                        reset();
+                    }
+                    fill_board();},
+                error: function(xhr, status, error) {
+                    console.log("AJAX error:", error); 
+                }
+            });
+            countdice=0;
             pturn(color);
-    }else if (piece != null && countdice==2){
-
+        } else if (diceResult != 6 && piece != null && countdice == 1){
+            $.ajax({
+                type: "PUT",
+                url: "ludo.php/move/"+piece, 
+                success:function(response) {
+                    var result = response.data;
+                    if (result == 1) {
+                        $('#resul').show(3000);
+                        reset();
+                    }
+                    fill_board();},
+                error: function(xhr, status, error) {
+                    console.log("AJAX error:", error); 
+                }
+            });
+            countdice=0;
+            pturn(color);
+        } else if (diceResult == 6 && piece != null ){
+            $.ajax({
+                type: "PUT",
+                url: "ludo.php/move/"+piece, 
+                success:function(response) {
+                    var result = response.data;
+                    if (result == 1) {
+                        $('#resul').show(3000);
+                        reset();
+                    }
+                    fill_board();},
+                error: function(xhr, status, error) {
+                    console.log("AJAX error:", error); 
+                }
+            });
+            countdice=0;
+            pturn(color);
+        }
     }
-    
-
 }
 
 function pturn(color){
+    setTimeout(function() {
+        document.getElementById("result").innerHTML = "";
+      }, 2000);
+    
     $.ajax({
         type: "POST",
-        url: "ludo.php/turn/" + color, // Replace with your PHP API endpoint
+        url: "ludo.php/turn/" + color, 
         data:  {color: color},  
         error: function(xhr, status, error) {
-            console.log("AJAX error:", error); // Log any AJAX errors
+            console.log("AJAX error:", error); 
         }
     });
 }
@@ -165,13 +182,12 @@ function getYesNo() {
 }
 
 function yesno(yesnos){
-    if (yesnos== 'yes'){
+    // if (yesnos== 'yes'){
 
-    }else if (yesnos== 'no'){
+    // }else if (yesnos== 'no'){
 
-    }
+    // }
 }
-
 
 function draw_empty_board() {
     var t = '<table id="ludo_table">';
@@ -191,22 +207,24 @@ function fill_board() {
         {url: "ludo.php/board",
         success: fill_board_by_data,
         error: function(xhr, status, error) {
-            console.log("AJAX error:", error); // Log any AJAX errors
+            console.log("AJAX error:", error); 
         }
         }
     );
 }
 
-function reset_board() {
+function reset() {
     $.ajax(
         {url: "ludo.php/board",
         method: 'post',
         success: fill_board_by_data,
         error: function(xhr, status, error) {
-            console.log("AJAX error:", error); // Log any AJAX errors
+            console.log("AJAX error:", error); 
         }
         }
     );
+
+    location.reload();
 }
 
 function fill_board_by_data(data){
@@ -249,12 +267,11 @@ function fill_board_by_data(data){
 }
 
 function login_to_game() {
+    $('#resul').hide();
     if ( $('#username').val()=='') {
         alert('You have to set a username');
         return;
     }
-
-
 
     var p_colour = getSelectedColor();
     
@@ -262,7 +279,6 @@ function login_to_game() {
         alert('Please select a color');
         return;
     }
-
 
     $.ajax({url: "ludo.php/players/"+p_colour,
             method: 'PUT',
@@ -273,9 +289,7 @@ function login_to_game() {
                 piece_colour: p_colour}),
             success: login_result,
             error: login_error});
-
 }
-
 
 function getSelectedColor() {
     var radios = document.getElementsByName('colour');
@@ -310,18 +324,6 @@ function login_error(data,y,z,c) {
     alert(x.errormesg);
     }
     
-
-// function login_error(data, y, z, c) {
-//     if (data && data.responseJSON && data.responseJSON.errormesg) {
-//         var errorMessage = data.responseJSON.errormesg;
-//         alert(errorMessage);
-//     } else {
-//         // Handle the case where the error message is not available
-//         console.error("Error message not found in response:", data);
-//         alert("An error occurred. Please try again.");
-//     }
-// }
-
 function game_start() {
     if (game_status.status == 'started' && me.piece_colour == game_status.p_turn){
         $('#dice').show(1000);
@@ -352,4 +354,3 @@ function update_status(data){
         setTimeout(function() {game_status_update();}, 4000);
     }
 }
-    
