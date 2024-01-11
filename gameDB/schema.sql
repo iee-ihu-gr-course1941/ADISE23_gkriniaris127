@@ -264,40 +264,33 @@ DELIMITER ;
 DELIMITER //
 CREATE PROCEDURE `clean_status`()
 BEGIN
+	DELETE FROM game_status;
 	REPLACE INTO game_status SELECT * FROM game_status_empty;
 END//
 DELIMITER ;
 
 -- Dumping structure for table game.game_status
 CREATE TABLE IF NOT EXISTS `game_status` (
-  `status` enum('not active','initialized','started','ended','aborted') DEFAULT 'not active',
+  `status` enum('not active','initialized','started','ended','aborted') NOT NULL DEFAULT 'not active',
   `dice_num` enum('1','2','3','4','5','6') DEFAULT NULL,
   `p_turn` enum('Y','R','B','G') DEFAULT NULL,
   `result` enum('Y','R','B','G') DEFAULT NULL,
-  `last_change` timestamp NULL DEFAULT NULL
+  `last_change` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`status`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- Dumping data for table game.game_status: ~0 rows (approximately)
+-- Dumping data for table game.game_status: ~1 rows (approximately)
 INSERT INTO `game_status` (`status`, `dice_num`, `p_turn`, `result`, `last_change`) VALUES
-	('started', '5', 'B', NULL, '2024-01-11 17:48:10'),
-	('started', '5', 'B', NULL, '2024-01-11 17:48:10'),
-	('started', '5', 'B', NULL, '2024-01-11 17:48:10'),
-	('started', '5', 'B', NULL, '2024-01-11 17:48:10'),
-	('started', '5', 'B', NULL, '2024-01-11 17:48:10'),
-	('started', '5', 'B', NULL, '2024-01-11 17:48:10'),
-	('started', '5', 'B', NULL, '2024-01-11 17:48:10'),
-	('started', '5', 'B', NULL, '2024-01-11 17:48:10'),
-	('started', '5', 'B', NULL, '2024-01-11 17:48:10'),
-	('started', '5', 'B', NULL, '2024-01-11 17:48:10'),
-	('not active', NULL, NULL, NULL, NULL);
+	('started', '4', 'R', NULL, '2024-01-11 21:36:48');
 
 -- Dumping structure for table game.game_status_empty
 CREATE TABLE IF NOT EXISTS `game_status_empty` (
-  `status` enum('not active','initialized','started','ended','aborted') DEFAULT 'not active',
+  `status` enum('not active','initialized','started','ended','aborted') NOT NULL DEFAULT 'not active',
   `dice_num` enum('1','2','3','4','5','6') DEFAULT NULL,
   `p_turn` enum('Y','R','B','G') DEFAULT NULL,
   `result` enum('Y','R','B','G') DEFAULT NULL,
-  `last_change` timestamp NULL DEFAULT NULL
+  `last_change` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`status`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci ROW_FORMAT=DYNAMIC;
 
 -- Dumping data for table game.game_status_empty: ~1 rows (approximately)
@@ -318,8 +311,8 @@ CREATE TABLE IF NOT EXISTS `players` (
 -- Dumping data for table game.players: ~4 rows (approximately)
 INSERT INTO `players` (`username`, `piece_colour`, `token`, `last_action`, `player_no`, `leader`) VALUES
 	(NULL, 'Y', NULL, NULL, NULL, NULL),
-	(NULL, 'R', NULL, NULL, NULL, NULL),
-	(NULL, 'B', NULL, NULL, NULL, NULL),
+	('gavriil', 'R', '38617c534acd403b309363f3d7e83052', '2024-01-11 21:36:38', NULL, NULL),
+	('rhfghfg', 'B', '5fb027e5c857d770e62ecd371be93731', '2024-01-11 21:36:48', NULL, NULL),
 	(NULL, 'G', NULL, NULL, NULL, NULL);
 
 -- Dumping structure for table game.players_empty
