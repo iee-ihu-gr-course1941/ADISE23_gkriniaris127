@@ -118,12 +118,15 @@ function handle_dice($method, $request) {
         $color = $row["color"];
     }
 
-    if ($piece != null){
+    if ($piece > 1){
         $sql3 = "SELECT position from board where piece_colour = '$color' and piece_num = $piece - 1";
         $st1 = $mysqli -> query($sql3);
-        $data1 = $st1->fetch_assoc();
-
-        $position = $data1["position"];
+        
+        if ($st1) {
+            $data1 = $st1->fetch_assoc();
+            $position = $data1["position"];
+        }
+        
     }
     
     $combinedData1 = array(
